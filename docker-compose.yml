@@ -1,0 +1,31 @@
+version: "3"
+services:
+  bookshelf:
+    image: altescy/bookshelf
+    container_name: bookshelf_app
+    ports:
+      - "8080:8080"
+    environment:
+      - BOOKSHELF_PORT=8080
+      - BOOKSHELF_DB_URL=sqlite3:///data/bookshelf.db
+      - BOOKSHELF_STORAGE_URL=file:///data/files
+    volumes:
+      - ./data:/data
+    depends_on:
+      - minio
+
+  minio:
+    image: minio/minio
+    container_name: bookshelf-minio-1
+    ports:
+      - "9000:80"
+    environment:
+      - MINIO_ACCESS_KEY=minio_access
+      - MINIO_SECRET_KEY=minio_secret
+    command: server /data
+
+  waitforminio:
+    image: dadarek/wait-for-dependencies
+    container_name: bookshelf-waitforminio-1
+    environment:
+      - WAIT_HOSTS=bookshelf-minio-1:9000
